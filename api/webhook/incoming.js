@@ -26,9 +26,12 @@ export default async function handler(req, res) {
     return
   }
 
-  const businessProfileId = process.env.VITE_BUSINESS_PROFILE_ID
-  if (!businessProfileId) {
-    res.status(500).send('Server is not configured with VITE_BUSINESS_PROFILE_ID')
+  let businessProfileId
+  try {
+    businessProfileId = await resolveBusinessProfileId()
+  } catch (err) {
+    console.error(err)
+    res.status(500).send('Could not resolve a business profile for this deployment')
     return
   }
 
@@ -99,6 +102,23 @@ async function classifyAndRespond(res, input, toTwiml) {
     console.error(err)
     res.status(500).send('Failed to process inbound contact')
   }
+}
+
+// Mirrors the frontend's fallback in src/lib/api.js: use the pinned env var
+// if set, otherwise fall back to whichever business profile exists (V1 is
+// single-tenant per deployment, so there's normally just the one).
+async function resolveBusinessProfileId() {
+  if (process.env.VITE_BUSINESS_PROFILE_ID) return process.env.VITE_BUSINESS_PROFILE_ID
+
+  const supabase = getSupabaseAdmin()
+  const { data, error } = await supabase
+    .from('business_profiles')
+    .select('id')
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+  if (error || !data) throw error || new Error('No business profile found')
+  return data.id
 }
 
 function respondXml(res, xml) {
