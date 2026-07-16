@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { getActiveBusinessProfile, listCallLogs, updateCallLogStatus } from '../lib/api'
 import ClassificationBadge from '../components/ClassificationBadge'
 import StatusBadge from '../components/StatusBadge'
+import PlayReplyButton from '../components/PlayReplyButton'
 
 const STATUS_FILTERS = [
   { value: '', label: 'All statuses' },
@@ -178,9 +179,12 @@ export default function Inbox() {
             </div>
             {selected.draft_reply && (
               <div>
-                <p className="text-xs uppercase tracking-wide text-ink-faint mb-1">
-                  What the AI said/texted back
-                </p>
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-xs uppercase tracking-wide text-ink-faint">
+                    What the AI said/texted back
+                  </p>
+                  <PlayReplyButton text={selected.draft_reply} />
+                </div>
                 <p className="text-sm text-ink-soft italic">&ldquo;{selected.draft_reply}&rdquo;</p>
               </div>
             )}

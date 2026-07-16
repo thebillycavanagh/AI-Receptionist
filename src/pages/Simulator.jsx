@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { getActiveBusinessProfile } from '../lib/api'
 import ClassificationBadge from '../components/ClassificationBadge'
+import PlayReplyButton from '../components/PlayReplyButton'
 
 export default function Simulator() {
   const [profile, setProfile] = useState(null)
@@ -110,9 +111,12 @@ export default function Simulator() {
           </div>
           {result.draft_reply && (
             <div>
-              <p className="text-xs uppercase tracking-wide text-ink-faint mb-1">
-                What the AI would say/text back
-              </p>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-xs uppercase tracking-wide text-ink-faint">
+                  What the AI would say/text back
+                </p>
+                <PlayReplyButton text={result.draft_reply} />
+              </div>
               <p className="text-sm text-ink-soft italic">&ldquo;{result.draft_reply}&rdquo;</p>
             </div>
           )}
