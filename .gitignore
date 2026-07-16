@@ -1,0 +1,26 @@
+# dependencies
+node_modules
+
+# env files — never commit real credentials
+.env
+.env.local
+.env.*.local
+
+# build output
+dist
+dist-ssr
+
+# vercel
+.vercel
+
+# logs
+*.log
+npm-debug.log*
+
+# editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# OS
+.DS_Store
