@@ -8,7 +8,7 @@ FAQs) — never through code changes.
 
 - **Frontend:** React + Vite + Tailwind CSS
 - **Backend/DB/Auth:** Supabase (Postgres, Row Level Security, Auth)
-- **AI:** Anthropic API (Claude), called server-side only
+- **AI:** Groq API (Llama 3.3 70B, free tier), called server-side only
 - **Deploy:** Vercel (static frontend + `/api` serverless functions)
 
 ## How it fits together
@@ -24,7 +24,7 @@ telephony or SMS provider (Twilio, etc.)
                              ├──►  api/_lib/classify.js
 /api/classify.js  (Simulator)┘        │  1. load business_profile + rules + FAQs
                                        │  2. apply deterministic rules (block/spam lists)
-                                       │  3. else classify with Claude, using tone + FAQs
+                                       │  3. else classify with Groq, using tone + FAQs
                                        ▼
                                  call_logs table
                                        │
@@ -78,7 +78,7 @@ many tenants — V1 just runs with one row.
    - `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` — Project Settings → API
    - `VITE_BUSINESS_PROFILE_ID` — the profile id from step 3
    - `SUPABASE_SERVICE_ROLE_KEY` — Project Settings → API (keep secret, server-only)
-   - `ANTHROPIC_API_KEY` — from console.anthropic.com (server-only)
+   - `GROQ_API_KEY` — from console.groq.com/keys, free tier, no card required (server-only)
    - `TELEPHONY_WEBHOOK_SECRET` — any random string you'll also configure in your telephony provider
 5. **Install and run:**
    ```bash
@@ -94,7 +94,7 @@ many tenants — V1 just runs with one row.
 1. Push this repo to GitHub/GitLab/Bitbucket and import it in Vercel.
 2. Add all variables from `.env.example` as Vercel Environment Variables
    (Project Settings → Environment Variables). `SUPABASE_SERVICE_ROLE_KEY` and
-   `ANTHROPIC_API_KEY` should **not** have the `VITE_` prefix, and are never
+   `GROQ_API_KEY` should **not** have the `VITE_` prefix, and are never
    sent to the browser.
 3. Deploy.
 
@@ -146,7 +146,7 @@ No code changes needed:
   the AI, so an admin can hard-override behavior without depending on model
   judgment.
 - The AI classification step only ever runs server-side (`api/_lib/classify.js`),
-  using `ANTHROPIC_API_KEY` — this key is never exposed to the browser bundle.
+  using `GROQ_API_KEY` — this key is never exposed to the browser bundle.
 - `api/classify.js` (used by the in-app Simulator) requires a valid Supabase
   session; `api/webhook/incoming.js` (used by real telephony traffic) requires
   the shared `TELEPHONY_WEBHOOK_SECRET` header instead, since a real caller

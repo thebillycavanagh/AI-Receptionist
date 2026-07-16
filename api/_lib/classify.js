@@ -96,9 +96,9 @@ function applyDeterministicRules({ rules, callerNumber }) {
 }
 
 async function classifyWithLLM({ profile, faqs, message }) {
-  const apiKey = process.env.ANTHROPIC_API_KEY
+  const apiKey = process.env.GROQ_API_KEY
   if (!apiKey) {
-    throw new Error('Missing ANTHROPIC_API_KEY server environment variable.')
+    throw new Error('Missing GROQ_API_KEY server environment variable.')
   }
 
   const faqBlock = faqs.length
@@ -129,32 +129,32 @@ Respond with ONLY a JSON object (no markdown, no preamble) matching this shape:
   "confidence": 0.0-1.0
 }`
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  // Groq's chat completions API is OpenAI-compatible and has a free tier
+  // (no card required). Swap the model below if Groq rotates/deprecates it.
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
+      model: 'llama-3.3-70b-versatile',
       max_tokens: 400,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: message }],
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: message },
+      ],
     }),
   })
 
   if (!response.ok) {
     const errText = await response.text()
-    throw new Error(`Anthropic API error (${response.status}): ${errText}`)
+    throw new Error(`Groq API error (${response.status}): ${errText}`)
   }
 
   const data = await response.json()
-  const text = (data.content || [])
-    .filter((block) => block.type === 'text')
-    .map((block) => block.text)
-    .join('\n')
-    .trim()
+  const text = (data.choices?.[0]?.message?.content || '').trim()
 
   try {
     const cleaned = text.replace(/^```json\s*|```$/g, '').trim()
