@@ -18,9 +18,16 @@ function getVoicesAsync() {
       resolve(existing)
       return
     }
-    window.speechSynthesis.onvoiceschanged = () => {
-      resolve(window.speechSynthesis.getVoices())
+    let settled = false
+    const finish = (voices) => {
+      if (settled) return
+      settled = true
+      resolve(voices)
     }
+    window.speechSynthesis.onvoiceschanged = () => finish(window.speechSynthesis.getVoices())
+    // Some browsers never fire voiceschanged if there are truly no voices —
+    // don't hang the Play button waiting for an event that'll never come.
+    setTimeout(() => finish(window.speechSynthesis.getVoices()), 1000)
   })
 }
 
