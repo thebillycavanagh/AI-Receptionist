@@ -140,20 +140,31 @@ function webhookUrl(req) {
   return `${proto}://${host}/api/webhook/incoming?secret=${secret}`
 }
 
+// Amazon Polly neural voice via Twilio — free (included in standard Twilio
+// Voice pricing, no separate signup), and far more natural than Twilio's
+// default voice. Swap for another Polly *-Neural voice to change who the
+// receptionist sounds like: https://www.twilio.com/docs/voice/twiml/say/text-speech#polly
+const TWILIO_VOICE = 'Polly.Joanna-Neural'
+const TWILIO_LANGUAGE = 'en-US'
+
+function say(text) {
+  return `<Say voice="${TWILIO_VOICE}" language="${TWILIO_LANGUAGE}">${escapeXml(text)}</Say>`
+}
+
 function smsTwiml(reply) {
   return `<?xml version="1.0" encoding="UTF-8"?><Response><Message>${escapeXml(reply)}</Message></Response>`
 }
 
 function voiceGatherTwiml(greeting, req) {
-  return `<?xml version="1.0" encoding="UTF-8"?><Response><Gather input="speech" method="POST" speechTimeout="auto" action="${escapeXml(webhookUrl(req))}"><Say>${escapeXml(greeting)}</Say></Gather><Say>Sorry, I didn't catch that. Please call back and try again.</Say><Hangup/></Response>`
+  return `<?xml version="1.0" encoding="UTF-8"?><Response><Gather input="speech" method="POST" speechTimeout="auto" action="${escapeXml(webhookUrl(req))}">${say(greeting)}</Gather>${say("Sorry, I didn't catch that. Please call back and try again.")}<Hangup/></Response>`
 }
 
 function voiceReplyTwiml(reply) {
-  return `<?xml version="1.0" encoding="UTF-8"?><Response><Say>${escapeXml(reply)}</Say><Hangup/></Response>`
+  return `<?xml version="1.0" encoding="UTF-8"?><Response>${say(reply)}<Hangup/></Response>`
 }
 
 function voiceFallbackTwiml() {
-  return `<?xml version="1.0" encoding="UTF-8"?><Response><Say>Sorry, we're unable to take your call right now. Please try again later.</Say><Hangup/></Response>`
+  return `<?xml version="1.0" encoding="UTF-8"?><Response>${say("Sorry, we're unable to take your call right now. Please try again later.")}<Hangup/></Response>`
 }
 
 function emptyTwiml() {

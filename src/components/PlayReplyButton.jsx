@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { isSpeechSupported, stopSpeaking } from '../lib/tts'
+import { isSpeechSupported, stopSpeaking, pickBestVoice } from '../lib/tts'
 
 // Speaks `text` aloud via the browser's built-in text-to-speech, so an admin
 // can hear how a drafted reply would sound on a real call before ever
@@ -9,13 +9,17 @@ export default function PlayReplyButton({ text }) {
 
   if (!isSpeechSupported() || !text) return null
 
-  function handleClick() {
+  async function handleClick() {
     if (speaking) {
       stopSpeaking()
       setSpeaking(false)
       return
     }
     const utterance = new SpeechSynthesisUtterance(text)
+    const voice = await pickBestVoice()
+    if (voice) utterance.voice = voice
+    utterance.rate = 0.95
+    utterance.pitch = 1
     utterance.onend = () => setSpeaking(false)
     utterance.onerror = () => setSpeaking(false)
     window.speechSynthesis.cancel()
