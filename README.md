@@ -140,6 +140,28 @@ No code changes needed:
    webhook route, if you evolve this into a true multi-tenant single
    deployment later) at that profile id.
 
+## Roadmap — deferred until ready to sell this to a real client
+
+Not started yet, intentionally — revisit before onboarding a paying customer:
+
+1. **Multi-tenant number routing.** Add a `twilio_phone_number` column to
+   `business_profiles`; have `api/webhook/incoming.js` resolve the profile by
+   the Twilio `To` number instead of "the one profile that exists." Lets one
+   deployment serve every client (buy them a number, insert a row, done) —
+   no more one-Vercel-project-per-client.
+2. **Website/knowledge-bank importer.** New settings flow: paste a business's
+   URL (or raw text) → fetch + feed to Groq → AI drafts FAQ entries → admin
+   reviews/edits before saving. Replaces manual one-at-a-time FAQ entry when
+   onboarding a new client.
+3. **Rebrand.** "Front Desk" is a placeholder name. Update `index.html` title,
+   `Login.jsx` / `Layout.jsx` header, this README. Final name/domain TBD —
+   likely lands under `cavanaghmanagementgroup.com` as a hub for this + the
+   sober living app + whatever else, possibly rebranding to "CMG Solutions"
+   later. Domain/DNS + Vercel custom domain setup is a separate step once a
+   domain is chosen.
+4. **Paywall / billing.** Not designed yet. Needed before this can actually
+   be sold — auth alone isn't gating payment today.
+
 ## Notes on the AI pipeline
 
 - Deterministic rules (`block_number`, `flag_as_spam`) always run **before**
